@@ -78,7 +78,7 @@ func (f *Form) formCallback(server *server.Server, ctx *server.RequestContext) e
 	items = append(
 		items,
 		server.NewItem(
-			gophermap.ItemTypeGopherMenu,
+			gophermap.ItemTypeInlineText,
 			"",
 			"/",
 		),
@@ -101,7 +101,7 @@ func (f *Form) setParametersRoutes(router *server.Router) error {
 	for _, keyword := range f.parametersNames {
 		err := router.SetWithWeight(
 			10,
-			f.prefixPath+keyword+".*",
+			"^"+f.prefixPath+keyword+".*",
 			func(server *server.Server, ctx *server.RequestContext) error {
 				if len(ctx.SearchParameter) == 0 {
 					return server.SendError(ctx.Conn, "Missing a search parameter.")
@@ -147,7 +147,7 @@ func (f *Form) setFormRoute(router *server.Router) error {
 func (f *Form) setSubmitRoute(router *server.Router) error {
 	return router.SetWithWeight(
 		1,
-		"^/"+f.submitName+".*",
+		"^"+f.prefixPath+f.submitName+".*",
 		func(server *server.Server, ctx *server.RequestContext) error {
 			parameters := GetParametersFromPath(ctx.VirtualPath)
 
