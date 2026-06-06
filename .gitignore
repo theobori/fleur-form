@@ -32,3 +32,5 @@ go.work.sum
 # .vscode/
 .direnv
 /result
+/cmd
+/main

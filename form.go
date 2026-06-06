@@ -2,6 +2,7 @@ package fleurform
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/google/uuid"
@@ -13,25 +14,29 @@ import (
 type SubmitCallback func(Parameters, *server.Server, *server.RequestContext) error
 
 type Form struct {
-	prefixPath      string
-	parametersNames []string
-	submitCallback  SubmitCallback
-	submitName      string
+	prefixPath         string
+	parametersMetadata []ParameterMetadata
+	submitCallback     SubmitCallback
+	submitName         string
 }
 
-func NewForm(prefixPath string, parametersNames []string, submitCallback SubmitCallback) *Form {
-	prefixPath = "/" + strings.Trim(prefixPath, "/") + "/"
+func NewForm(
+	prefixPath string,
+	parametersMetadata []ParameterMetadata,
+	submitCallback SubmitCallback,
+) *Form {
+	prefixPath = "/" + strings.Trim(prefixPath, "/")
 
 	return &Form{
-		prefixPath:      prefixPath,
-		parametersNames: parametersNames,
-		submitCallback:  submitCallback,
-		submitName:      uuid.NewString(),
+		prefixPath:         prefixPath,
+		parametersMetadata: parametersMetadata,
+		submitCallback:     submitCallback,
+		submitName:         uuid.NewString(),
 	}
 }
 
 func (f *Form) FormPath() string {
-	return f.prefixPath + "form"
+	return filepath.Join(f.prefixPath, "form")
 }
 
 func (f *Form) formCallback(server *server.Server, ctx *server.RequestContext) error {
@@ -54,20 +59,20 @@ func (f *Form) formCallback(server *server.Server, ctx *server.RequestContext) e
 
 	items := []*gophermap.Item{}
 
-	for _, parameterName := range f.parametersNames {
+	for _, parameterMetadata := range f.parametersMetadata {
 		var item *gophermap.Item
 
-		value, ok := parameters[parameterName]
+		value, ok := parameters[parameterMetadata.Name]
 		if !ok {
 			item = server.NewItem(
 				gophermap.ItemTypeGopherFullTextSearch,
-				parameterName+":",
-				f.prefixPath+parameterName+parametersNamesuffix,
+				parameterMetadata.String()+":",
+				f.prefixPath+parameterMetadata.Name+parametersNamesuffix,
 			)
 		} else {
 			item = server.NewItem(
 				gophermap.ItemTypeInlineText,
-				parameterName+": "+value,
+				parameterMetadata.String()+": "+value,
 				f.FormPath(),
 			)
 		}
@@ -98,10 +103,10 @@ func (f *Form) formCallback(server *server.Server, ctx *server.RequestContext) e
 }
 
 func (f *Form) setParametersRoutes(router *server.Router) error {
-	for _, keyword := range f.parametersNames {
+	for _, parameterMetadata := range f.parametersMetadata {
 		err := router.SetWithWeight(
 			10,
-			"^"+f.prefixPath+keyword+".*",
+			"^"+f.prefixPath+parameterMetadata.Name+".*",
 			func(server *server.Server, ctx *server.RequestContext) error {
 				if len(ctx.SearchParameter) == 0 {
 					return server.SendError(ctx.Conn, "Missing a search parameter.")
@@ -120,7 +125,7 @@ func (f *Form) setParametersRoutes(router *server.Router) error {
 					"%s%s%s%s%s",
 					ctx.VirtualPath,
 					preKeyword,
-					keyword,
+					parameterMetadata.Name,
 					PairSeparator,
 					ctx.SearchParameter,
 				)
@@ -151,6 +156,20 @@ func (f *Form) setSubmitRoute(router *server.Router) error {
 		func(server *server.Server, ctx *server.RequestContext) error {
 			parameters := GetParametersFromPath(ctx.VirtualPath)
 
+			for _, parameterMetadata := range f.parametersMetadata {
+				if !parameterMetadata.Required {
+					continue
+				}
+
+				_, ok := parameters[parameterMetadata.Name]
+				if !ok {
+					return server.SendError(
+						ctx.Conn,
+						fmt.Sprintf("Missing the '%s' parameter.", parameterMetadata.Name),
+					)
+				}
+			}
+
 			return f.submitCallback(parameters, server, ctx)
 		},
 	)
@@ -177,8 +196,13 @@ func (f *Form) SetRoutes(router *server.Router) error {
 	return nil
 }
 
-func AddFormToRouter(router *server.Router, prefixPath string, parametersNames []string, submitCallback SubmitCallback) error {
-	form := NewForm(prefixPath, parametersNames, submitCallback)
+func AddFormToRouter(
+	router *server.Router,
+	prefixPath string,
+	parameterMetadata []ParameterMetadata,
+	submitCallback SubmitCallback,
+) error {
+	form := NewForm(prefixPath, parameterMetadata, submitCallback)
 
 	err := form.SetRoutes(router)
 	if err != nil {
