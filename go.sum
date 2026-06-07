@@ -4,3 +4,5 @@ github.com/h2non/filetype v1.1.3 h1:FKkx9QbD7HR/zjK1Ia5XiBsq9zdLi5Kf3zGyFTAFkGg=
 github.com/h2non/filetype v1.1.3/go.mod h1:319b3zT68BvV+WRj7cwy856M2ehB3HqNOt6sy1HndBY=
 github.com/theobori/fleur v0.0.0-20260531211342-557b72faf45c h1:Vnc8Yq8d16opHuCNW5RI1+ADWlWUIOKAj0C3o6Ay5IU=
 github.com/theobori/fleur v0.0.0-20260531211342-557b72faf45c/go.mod h1:T7TyKrl7UKWTxX2VUquyawyA3bARTd4nh4D5RaDvnlI=
+github.com/theobori/fleur v0.0.0-20260607093716-c2c01ddbccc1 h1:/2Xh+IBX18T5QLDkpf3fy6sXscJv6rozS/F9Azka0/o=
+github.com/theobori/fleur v0.0.0-20260607093716-c2c01ddbccc1/go.mod h1:T7TyKrl7UKWTxX2VUquyawyA3bARTd4nh4D5RaDvnlI=
