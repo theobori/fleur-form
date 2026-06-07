@@ -175,7 +175,7 @@ func (f *Form) setSubmitRoute(router *server.Router) error {
 	)
 }
 
-func (f *Form) SetRoutes(router *server.Router) error {
+func (f *Form) Apply(router *server.Router) error {
 	var err error
 
 	err = f.setParametersRoutes(router)
@@ -196,7 +196,7 @@ func (f *Form) SetRoutes(router *server.Router) error {
 	return nil
 }
 
-func AddFormToRouter(
+func Apply(
 	router *server.Router,
 	prefixPath string,
 	parameterMetadata []ParameterMetadata,
@@ -204,7 +204,7 @@ func AddFormToRouter(
 ) error {
 	form := NewForm(prefixPath, parameterMetadata, submitCallback)
 
-	err := form.SetRoutes(router)
+	err := form.Apply(router)
 	if err != nil {
 		return err
 	}
