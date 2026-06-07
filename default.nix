@@ -13,7 +13,7 @@ buildGoModule {
   ];
 
   meta = {
-    description = "";
+    description = "Fleur router extension";
     homepage = "https://github.com/theobori/fleur-form";
     license = lib.licenses.mit;
   };
