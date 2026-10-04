@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	gserver "github.com/theobori/fleur/gopher/server"
 	"github.com/theobori/fleur/gophermap"
 	"github.com/theobori/fleur/server"
 )
@@ -99,7 +98,7 @@ func (f *Form) formCallback(server *server.Server, ctx *server.RequestContext) e
 
 	menu := gophermap.RenderMenu(items...)
 
-	return gserver.SendString(ctx.Conn, menu)
+	return server.SendString(ctx.Conn, menu)
 }
 
 func (f *Form) setParametersRoutes(router *server.Router) error {
